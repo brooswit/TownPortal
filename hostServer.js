@@ -19,7 +19,7 @@ http.listen(port, async function(){
 });
 
 async function exitHandler(options, exitCode) {
-    if (options.cleanup) await tp.close();
+    if (options.cleanup) await tp.stop();
     if (exitCode || exitCode === 0) console.log(exitCode);
     if (options.exit) process.exit();
 }
