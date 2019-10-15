@@ -1,4 +1,5 @@
-const port = process.env.PORT || 8080;
+const PORT = process.env.PORT || 8080;
+
 const app = require('express')();
 const http = require('http').createServer(app);
 const io = require('socket.io')(http);
@@ -13,8 +14,8 @@ io.on('connection', function(socket){
   tp.spawn(socket)
 });
 
-http.listen(port, async function(){
-    console.log(`listening on *:${port}`);
+http.listen(PORT, async function(){
+    console.log(`listening on *:${PORT}`);
     await tp.start();
 });
 
