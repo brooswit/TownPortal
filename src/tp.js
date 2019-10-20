@@ -18,18 +18,26 @@ module.exports = exports = new (function(){
     this.started = false;
     this.paused = false;
 
+    this.untilStarted = untilStarted;
+    this.untilStopped = untilStopped;
+
+    this._startPromise = new Resolvable();
+    this._stopPromise = new Resolvable();
+
     const turnInterval = 10000
     asyncly(async ()=>{
         while(!started) {
             await delay(1);
         }
         this._ld = ldclient.init(LD_SDK_KEY);
+        this._startPromise.resolve();
         while(started) {
             while(!paused) {
                 await delay(1);
             }
             await this.step();
         }
+        this._stopPromise.resolve()
     });
 })();
 
@@ -53,12 +61,13 @@ async function act(entityId, action, options) {
 
 }
 
-function spawn(socket) {
-
+async function spawn(socket) {
+    await this._startPromise;
 }
 
 function start() {
     this.started = true;
+    return this._startPromise;
 }
 function pause() {
     this.paused = true;
@@ -67,5 +76,13 @@ function unpause() {
     this.paused = false;
 }
 function stop() {
-    this.started = false
+    this.started = false;
+    return this._stopPromise;
+}
+
+function untilStarted() {
+    return this._startPromise;
+}
+function untilStopped() {
+    return this._stopPromise;
 }

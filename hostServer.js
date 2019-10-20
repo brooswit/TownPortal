@@ -10,14 +10,32 @@ app.get('/', function(req, res){
 });
 
 io.on('connection', function(socket){
-  console.log('a user connected');
-  tp.spawn(socket)
+    console.log('a user connected');
+    await tp.spawn(socket)
 });
+async function start() {
+    console.log(`Starting TownPortal server...`);
 
-http.listen(PORT, async function(){
-    console.log(`listening on *:${PORT}`);
-    await tp.start();
-});
+    console.log(`...Starting TP...`);
+    let untilTPStarted = tp.start();
+    untilTPStarted.then(()=>{
+        console.log(`...TP Started!`);
+    });
+
+    console.log(`...Starting Express...`);
+    let untilExpressStarted = asyncly( (done)=>{http.listen(PORT, done);})
+    untilExpressStarted.then(()=>{
+        console.log(`...Express Started!`);
+    });
+
+    Promise.all([
+        untilTPStarted,
+        untilExpressStarted
+    ]).then(()=>{
+        console.log(`...Done starting TownPortal server!`);
+        console.log(`TownPortal server hosted on port ${PORT}`);
+    })
+}
 
 async function exitHandler(options, exitCode) {
     if (options.cleanup) await tp.stop();
