@@ -126,7 +126,7 @@ const controllers = {
     "grass": grassController("light grass", "grass", "healthy grass"),
     "healthy grass": grassController("grass", "healthy grass", ["flower", "overgrowth"]),
     "flower": grassController("flower", "flower", "healthy grass"),
-    "overgrowth": grassController("healthy grass", "overgrowth", "bush"),
+    "overgrowth": grassController("healthy grass", "overgrowth", ["healthy grass", "bush"]),
     "bush": grassController("bush", "healthy grass", "overgrowth"),
 }
 
