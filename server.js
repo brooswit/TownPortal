@@ -1,5 +1,5 @@
 const port = process.env.PORT || 3000;
-const serviceAccountKey = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
+const serviceAccountKey = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
 const ldSDKKey = process.env.LD_SDK_KEY;
 
 const express = require('express');
