@@ -137,13 +137,13 @@ const controllers = {
 async function run() {
     console.log('starting TownPortal');
     let currentTime = Date.now();
-    let stepInterval = await ldClient.variation('step-interval', {}, 10);
+    let stepInterval = await ldClient.variation('step-interval', {key:"anonymous"}, 10);
     let lastTick = currentTime - stepInterval * 1000;
     while(true) {
         currentTime = Date.now();
-        stepInterval = await ldClient.variation('step-interval', {}, 10);
-        let isNotPaused = !await ldClient.variation('pause', {}, true);
-        let isTimeToStep = currentTime >= lastTick + stepInterval * 1000
+        stepInterval = await ldClient.variation('step-interval', {key:"anonymous"}, 10);
+        let isNotPaused = !(await ldClient.variation('pause', {key:"anonymous"}, true));
+        let isTimeToStep = currentTime >= lastTick + (stepInterval * 1000)
         if (isTimeToStep && isNotPaused) {
             console.log(`stepping`)
             const querySnapshot = await entityCollection.get();
