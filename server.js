@@ -52,52 +52,82 @@ async function delay(time = 0) {
     });
 }
 
-const controllers = {
-    "grass": async (doc) => {
+function oneOf(array) {
+    return Array.isArray(array) ? array[Math.floor(Math.random() * array.length)] : array;
+}
+
+function grassController(previousStage, currentStage, nextStage) {
+    async (doc) => {
         const data = doc.data();
-        console.log('thinkin bout grass');
-        const offsets = [
-            {
-                x: 0,
-                y: 1,
-            },
-            {
-                x: 0,
-                y: -1,
-            },
-            {
-                x: 1,
-                y: 0,
-            },
-            {
-                x: -1,
-                y: 0,
-            },
-        ];
-        const offset = offsets[Math.floor(Math.random() * offsets.length)];
 
-        const snapshot = await entityCollection
-            .where('x', '==', data.x+offset.x)
-            .where('y', '==', data.y+offset.y)
-            .get();
+        const firstStage = "light grass";
 
-        if (snapshot.empty) {
-            const entityData = {
-                classname: "grass",
-                x: data.x+offset.x,
-                y: data.y+offset.y
-            };
-            const res = await entityCollection.add(entityData);
+        if(Math.random() < 0.20) {
+            doc.update({
+                classname: previousStage
+            });
+        } else {
+            const offsets = [{x: 0, y: 1,},{x: 0,y: -1,},{x: 1,y: 0,},{x: -1,y: 0,},];
+            const offset = oneOf(offsets);
 
-            console.log(res.id, entityData);
+            const snapshot = await entityCollection
+                .where('x', '==', data.x+offset.x)
+                .where('y', '==', data.y+offset.y)
+                .get();
 
-            return;
-        }  
+            if (snapshot.empty) {
+                const entityData = {
+                    classname: firstStage,
+                    x: data.x+offset.x,
+                    y: data.y+offset.y
+                };
+                const res = await entityCollection.add(entityData);
 
-        snapshot.forEach(doc => {
-            console.log(doc.id, '=>', doc.data());
-        });
+                console.log(res.id, entityData);
+
+                return;
+            }
+
+            snapshot = await entityCollection
+                .where('x', '==', data.x+offset.x)
+                .where('y', '==', data.y+offset.y)
+                .where('classname', '==', "dirt")
+                .get();
+
+            if (!snapshot.empty) {
+                snapshot.forEach(doc => {
+                    doc.update({
+                        classname: firstStage
+                    });
+                });
+                return;
+            }
+
+            snapshot = await entityCollection
+                .where('x', '==', data.x+offset.x)
+                .where('y', '==', data.y+offset.y)
+                .where('classname', '==', currentStage)
+                .get();
+
+            if (!snapshot.empty) {
+                snapshot.forEach(doc => {
+                    doc.update({
+                        classname: oneOf(nextStages)
+                    });
+                });
+                return;
+            }
+        }
     }
+}
+
+const controllers = {
+    "light grass": grassController("dirt", "light grass", "grass"),
+    "grass": grassController("light grass", "grass", "healthy grass"),
+    "healthy grass": grassController("grass", "healthy grass", ["flower", "overgrowth"]),
+    "flower": grassController("flower", "flower", "healthy grass"),
+    "overgrowth": grassController("healthy grass", "overgrowth", "bush"),
+    "bush": grassController("bush", "healthy grass", "overgrowth"),
 }
 
 async function run() {
@@ -109,7 +139,6 @@ async function run() {
         if (!paused && currentTime > lastTick + stepInterval*1000) {
             const snapshot = await entityCollection.get();
             snapshot.forEach((doc) => {
-                console.log(doc.id, '=>', doc.data());
                 controllers[doc.data().classname] && controllers[doc.data().classname](doc);
             });
             lastTick = currentTime;
