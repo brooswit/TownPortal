@@ -42,5 +42,15 @@ Promise.all([
 ]).then(()=>{
     httpServer.listen(port, () => {
         console.log(`listening on *:${port}`);
+        run();
     });
 });
+
+async function run() {
+    while(true) {
+        const snapshot = await entityCollection.get();
+        snapshot.forEach((doc) => {
+            console.log(doc.id, '=>', doc.data());
+        });
+    }
+}
