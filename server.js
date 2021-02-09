@@ -150,6 +150,8 @@ async function run() {
             let querySnapshot = await entityCollection.get();
             console.log(`processing ${querySnapshot._size} entities`);
             querySnapshot.forEach((doc) => {
+                let isPaused = await ldClient.variation('pause', {key:"anonymous"}, true);
+                if (isPaused) return;
                 let data = doc.data();
                 console.log(`thinkin bout ${data.classname}`);
                 controllers[data.classname] && controllers[data.classname](doc);
