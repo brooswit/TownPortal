@@ -14,7 +14,7 @@ const io = IO(httpServer);
 const db = admin.initializeApp({credential: admin.credential.cert(serviceAccountKey)}).firestore();
 const ldClient = LaunchDarkly.init(ldSDKKey);
 ldClient.on('update', (param) => {
-  console.log(`a flag was changed: ${param}`);
+  console.log(`a flag was changed: ${JSON.stringify(param)}`);
 });
 const entityCollection = db.collection('entities');
 
@@ -155,7 +155,7 @@ async function run() {
             });
             lastTick += stepInterval;
         } else {
-            console.log(`skipping due to ${{isTimeToStep,isNotPaused}}`)
+            console.log(`skipping due to ${JSON.stringify({isTimeToStep,isNotPaused})}`)
             await delay();
         }
     }
