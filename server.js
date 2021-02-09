@@ -54,6 +54,7 @@ async function delay(time = 0) {
 
 const controllers = {
     "grass": async (doc) => {
+        const data = doc.data();
         console.log('thinkin bout grass');
         const offsets = [
             {
@@ -76,8 +77,8 @@ const controllers = {
         const offset = offsets[Math.floor(Math.random() * offsets.length)];
 
         const snapshot = await entityCollection
-            .where('x', '==', doc.x+offset.x)
-            .where('y', '==', doc.y+offset.y)
+            .where('x', '==', data.x+offset.x)
+            .where('y', '==', data.y+offset.y)
             .get();
 
         if (snapshot.empty) {
@@ -85,9 +86,11 @@ const controllers = {
 
             const res = await db.collection('cities').add({
                 classname: "grass",
-                x: doc.x+offset.x,
-                y: doc.y+offset.y
+                x: data.x+offset.x,
+                y: data.y+offset.y
             });
+
+            console.log(res.id);
 
             return;
         }  
