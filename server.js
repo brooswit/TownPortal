@@ -149,7 +149,7 @@ async function run() {
             console.log(`stepping`)
             let querySnapshot = await entityCollection.get();
             console.log(`processing ${querySnapshot._size} entities`);
-            querySnapshot.forEach((doc) => {
+            querySnapshot.forEach(async (doc) => {
                 let isPaused = await ldClient.variation('pause', {key:"anonymous"}, true);
                 if (isPaused) return;
                 let data = doc.data();
