@@ -53,7 +53,7 @@ async function delay(time = 0) {
 }
 
 const controllers = {
-    "grass": (doc) => {
+    "grass": async (doc) => {
         const offsets = [
             {
                 x: 0,
@@ -106,6 +106,7 @@ async function run() {
             const snapshot = await entityCollection.get();
             snapshot.forEach((doc) => {
                 console.log(doc.id, '=>', doc.data());
+                controllers[doc.classname] && controllers[doc.classname]();
             });
             lastTick = currentTime;
         } else {
