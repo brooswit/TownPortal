@@ -52,6 +52,51 @@ async function delay(time = 0) {
     });
 }
 
+const controllers = {
+    "grass": (doc) => {
+        const offsets = [
+            {
+                x: 0,
+                y: 1,
+            },
+            {
+                x: 0,
+                y: -1,
+            },
+            {
+                x: 1,
+                y: 0,
+            },
+            {
+                x: -1,
+                y: 0,
+            },
+        ];
+        const offset = offsets[Math.floor(Math.random() * offsets.length)];
+
+        const snapshot = await entityCollection
+            .where('x', '==', doc.x+offset.x)
+            .where('y', '==', doc.y+offset.y)
+            .get();
+
+        if (snapshot.empty) {
+            console.log('No matching documents.');
+
+            const res = await db.collection('cities').add({
+                classname: "grass",
+                x: doc.x+offset.x,
+                y: doc.y+offset.y
+            });
+
+            return;
+        }  
+
+        snapshot.forEach(doc => {
+            console.log(doc.id, '=>', doc.data());
+        });
+    }
+}
+
 async function run() {
     let lastTick = -Infinity;
     while(true) {
