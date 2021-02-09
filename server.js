@@ -141,12 +141,12 @@ async function run() {
         stepInterval = await ldClient.variation('step-interval', {}, 10);
         let paused = await ldClient.variation('pause', {}, true);
         if (!paused && currentTime > lastTick + stepInterval*1000) {
-            console.log(`step`)
-            const snapshot = await entityCollection.get();
-            snapshot.forEach((doc) => {
+            const querySnapshot = await entityCollection.get();
+            console.log(`processing ${querySnapshot._size} entities`);
+            querySnapshot.forEach((doc) => {
                 const data = doc.data();
+                console.log(`thinkin bout ${data.classname}`);
                 controllers[data.classname] && controllers[data.classname](doc);
-                console.log(`thinkin bout ${data.classname}`)
             });
             lastTick += stepInterval;
         } else {
