@@ -58,7 +58,7 @@ function oneOf(array) {
     return Array.isArray(array) ? array[Math.floor(Math.random() * array.length)] : array;
 }
 
-function grassController(previousStage, currentStage, nextStage) {
+function grassController(previousStage, currentStage, nextStages) {
     return async (doc) => {
         let data = doc.data();
 
