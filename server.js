@@ -141,7 +141,9 @@ async function run() {
         if (!paused && currentTime > lastTick + stepInterval*1000) {
             const snapshot = await entityCollection.get();
             snapshot.forEach((doc) => {
-                controllers[doc.data().classname] && controllers[doc.data().classname](doc);
+                const data = doc.data();
+                controllers[data.classname] && controllers[data.classname](doc);
+                console.log(`thinkin bout ${data.classname}`)
             });
             lastTick = currentTime;
         } else {
