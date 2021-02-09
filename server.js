@@ -57,7 +57,7 @@ function oneOf(array) {
 }
 
 function grassController(previousStage, currentStage, nextStage) {
-    async (doc) => {
+    return async (doc) => {
         const data = doc.data();
 
         const firstStage = "light grass";
@@ -111,9 +111,11 @@ function grassController(previousStage, currentStage, nextStage) {
 
             if (!snapshot.empty) {
                 snapshot.forEach(doc => {
-                    doc.update({
+                    const patch = {
                         classname: oneOf(nextStages)
-                    });
+                    };
+                    doc.update(patch);
+                    console.log(patch);
                 });
                 return;
             }
