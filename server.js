@@ -46,11 +46,25 @@ Promise.all([
     });
 });
 
+async function delay(time = 0) {
+    return new Promise((resolve, reject)=>{
+        setTimeout(resolve, time);
+    });
+}
+
 async function run() {
+    let lastTick = -Infinity;
     while(true) {
-        const snapshot = await entityCollection.get();
-        snapshot.forEach((doc) => {
-            console.log(doc.id, '=>', doc.data());
-        });
+        let currentTime = Date.now();
+        let stepInterval = await ldClient.variation('step-interval', {}, 10);
+        if (currentTime > lastTick + stepInterval*1000) {
+            const snapshot = await entityCollection.get();
+            snapshot.forEach((doc) => {
+                console.log(doc.id, '=>', doc.data());
+            });
+            lastTick = currentTime;
+        } else {
+            await delay();
+        }
     }
 }
