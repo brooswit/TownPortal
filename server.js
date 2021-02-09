@@ -82,8 +82,6 @@ const controllers = {
             .get();
 
         if (snapshot.empty) {
-            console.log('No matching documents.');
-
             const entityData = {
                 classname: "grass",
                 x: data.x+offset.x,
@@ -107,7 +105,8 @@ async function run() {
     while(true) {
         let currentTime = Date.now();
         let stepInterval = await ldClient.variation('step-interval', {}, 10);
-        if (currentTime > lastTick + stepInterval*1000) {
+        let paused = await ldClient.variation('pause', {}, true);
+        if (!paused && currentTime > lastTick + stepInterval*1000) {
             const snapshot = await entityCollection.get();
             snapshot.forEach((doc) => {
                 console.log(doc.id, '=>', doc.data());
