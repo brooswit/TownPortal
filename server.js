@@ -14,7 +14,7 @@ const io = IO(httpServer);
 const db = admin.initializeApp({credential: admin.credential.cert(serviceAccountKey)}).firestore();
 const ldClient = LaunchDarkly.init(ldSDKKey);
 ldClient.on('update', (param) => {
-  console.log('a flag was changed: ' + param);
+  console.log(`a flag was changed: ${param}`);
 });
 const entityCollection = db.collection('entities');
 
@@ -135,14 +135,17 @@ const controllers = {
 }
 
 async function run() {
+    console.log('starting TownPortal');
     let currentTime = Date.now();
     let stepInterval = await ldClient.variation('step-interval', {}, 10);
-    let lastTick = currentTime - stepInterval;
+    let lastTick = currentTime - stepInterval * 1000;
     while(true) {
         currentTime = Date.now();
         stepInterval = await ldClient.variation('step-interval', {}, 10);
-        let paused = await ldClient.variation('pause', {}, true);
-        if (!paused && currentTime > lastTick + stepInterval*1000) {
+        let isNotPaused = !await ldClient.variation('pause', {}, true);
+        let isTimeToStep = currentTime >= lastTick + stepInterval * 1000
+        if (isTimeToStep && isNotPaused) {
+            console.log(`stepping`)
             const querySnapshot = await entityCollection.get();
             console.log(`processing ${querySnapshot._size} entities`);
             querySnapshot.forEach((doc) => {
@@ -152,6 +155,7 @@ async function run() {
             });
             lastTick += stepInterval;
         } else {
+            console.log(`skipping due to ${{isTimeToStep,isNotPaused}}`)
             await delay();
         }
     }
