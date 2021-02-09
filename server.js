@@ -133,10 +133,13 @@ const controllers = {
 }
 
 async function run() {
-    let lastTick = -Infinity;
+    let currentTime = Date.now();
+    let stepInterval = await ldClient.variation('step-interval', {}, 10);
+    let lastTick = currentTime - stepInterval;
     while(true) {
-        let currentTime = Date.now();
-        let stepInterval = await ldClient.variation('step-interval', {}, 10);
+        console.log(`step`)
+        currentTime = Date.now();
+        stepInterval = await ldClient.variation('step-interval', {}, 10);
         let paused = await ldClient.variation('pause', {}, true);
         if (!paused && currentTime > lastTick + stepInterval*1000) {
             const snapshot = await entityCollection.get();
@@ -145,7 +148,7 @@ async function run() {
                 controllers[data.classname] && controllers[data.classname](doc);
                 console.log(`thinkin bout ${data.classname}`)
             });
-            lastTick = currentTime;
+            lastTick += stepInterval;
         } else {
             await delay();
         }
