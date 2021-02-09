@@ -84,13 +84,14 @@ const controllers = {
         if (snapshot.empty) {
             console.log('No matching documents.');
 
-            const res = await db.collection('cities').add({
+            const entityData = {
                 classname: "grass",
                 x: data.x+offset.x,
                 y: data.y+offset.y
-            });
+            };
+            const res = await entityCollection.add(entityData);
 
-            console.log(res.id);
+            console.log(res.id, entityData);
 
             return;
         }  
