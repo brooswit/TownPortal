@@ -13,7 +13,9 @@ const httpServer = http.createServer(app);
 const io = IO(httpServer);
 const db = admin.initializeApp({credential: admin.credential.cert(serviceAccountKey)}).firestore();
 const ldClient = LaunchDarkly.init(ldSDKKey);
-
+ldClient.on('update', (param) => {
+  console.log('a flag was changed: ' + param);
+});
 const entityCollection = db.collection('entities');
 
 app.use(express.static('dist'));
