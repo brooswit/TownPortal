@@ -137,11 +137,11 @@ async function run() {
     let stepInterval = await ldClient.variation('step-interval', {}, 10);
     let lastTick = currentTime - stepInterval;
     while(true) {
-        console.log(`step`)
         currentTime = Date.now();
         stepInterval = await ldClient.variation('step-interval', {}, 10);
         let paused = await ldClient.variation('pause', {}, true);
         if (!paused && currentTime > lastTick + stepInterval*1000) {
+            console.log(`step`)
             const snapshot = await entityCollection.get();
             snapshot.forEach((doc) => {
                 const data = doc.data();
