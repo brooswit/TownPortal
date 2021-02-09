@@ -1,22 +1,22 @@
-const port = process.env.PORT || 3000;
-const serviceAccountKey = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
-const ldSDKKey = process.env.LD_SDK_KEY;
+let port = process.env.PORT || 3000;
+let serviceAccountKey = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
+let ldSDKKey = process.env.LD_SDK_KEY;
 
-const express = require('express');
-const http = require('http');
-const IO = require('socket.io');
-const admin = require('firebase-admin');
-const LaunchDarkly = require('launchdarkly-node-server-sdk');
+let express = require('express');
+let http = require('http');
+let IO = require('socket.io');
+let admin = require('firebase-admin');
+let LaunchDarkly = require('launchdarkly-node-server-sdk');
 
-const app = express();
-const httpServer = http.createServer(app);
-const io = IO(httpServer);
-const db = admin.initializeApp({credential: admin.credential.cert(serviceAccountKey)}).firestore();
-const ldClient = LaunchDarkly.init(ldSDKKey);
+let app = express();
+let httpServer = http.createServer(app);
+let io = IO(httpServer);
+let db = admin.initializeApp({credential: admin.credential.cert(serviceAccountKey)}).firestore();
+let ldClient = LaunchDarkly.init(ldSDKKey);
 ldClient.on('update', (param) => {
   console.log(`a flag was changed: ${JSON.stringify(param)}`);
 });
-const entityCollection = db.collection('entities');
+let entityCollection = db.collection('entities');
 
 app.use(express.static('dist'));
 
@@ -60,30 +60,30 @@ function oneOf(array) {
 
 function grassController(previousStage, currentStage, nextStage) {
     return async (doc) => {
-        const data = doc.data();
+        let data = doc.data();
 
-        const firstStage = "light grass";
+        let firstStage = "light grass";
 
         if(Math.random() < 0.20) {
             doc.update({
                 classname: previousStage
             });
         } else {
-            const offsets = [{x: 0, y: 1,},{x: 0,y: -1,},{x: 1,y: 0,},{x: -1,y: 0,},];
-            const offset = oneOf(offsets);
+            let offsets = [{x: 0, y: 1,},{x: 0,y: -1,},{x: 1,y: 0,},{x: -1,y: 0,},];
+            let offset = oneOf(offsets);
 
-            const snapshot = await entityCollection
+            let snapshot = await entityCollection
                 .where('x', '==', data.x+offset.x)
                 .where('y', '==', data.y+offset.y)
                 .get();
 
             if (snapshot.empty) {
-                const entityData = {
+                let entityData = {
                     classname: firstStage,
                     x: data.x+offset.x,
                     y: data.y+offset.y
                 };
-                const res = await entityCollection.add(entityData);
+                let res = await entityCollection.add(entityData);
 
                 console.log(res.id, entityData);
 
@@ -113,7 +113,7 @@ function grassController(previousStage, currentStage, nextStage) {
 
             if (!snapshot.empty) {
                 snapshot.forEach(doc => {
-                    const patch = {
+                    let patch = {
                         classname: oneOf(nextStages)
                     };
                     doc.update(patch);
@@ -125,7 +125,7 @@ function grassController(previousStage, currentStage, nextStage) {
     }
 }
 
-const controllers = {
+let controllers = {
     "light grass": grassController("dirt", "light grass", "grass"),
     "grass": grassController("light grass", "grass", "healthy grass"),
     "healthy grass": grassController("grass", "healthy grass", ["flower", "overgrowth"]),
@@ -139,6 +139,7 @@ async function run() {
     let currentTime = Date.now();
     let stepInterval = await ldClient.variation('step-interval', {key:"anonymous"}, 10000);
     let lastTick = currentTime - stepInterval;
+    let lastSkipMessageTime = lastTick;
     while(true) {
         currentTime = Date.now();
         stepInterval = await ldClient.variation('step-interval', {key:"anonymous"}, 10000);
@@ -146,16 +147,19 @@ async function run() {
         let isTimeToStep = currentTime >= lastTick + stepInterval
         if (isTimeToStep && isNotPaused) {
             console.log(`stepping`)
-            const querySnapshot = await entityCollection.get();
+            let querySnapshot = await entityCollection.get();
             console.log(`processing ${querySnapshot._size} entities`);
             querySnapshot.forEach((doc) => {
-                const data = doc.data();
+                let data = doc.data();
                 console.log(`thinkin bout ${data.classname}`);
                 controllers[data.classname] && controllers[data.classname](doc);
             });
             lastTick += stepInterval;
         } else {
-            console.log(`skipping due to ${JSON.stringify({isTimeToStep,isNotPaused})}`)
+            if (currentTime >= lastSkipMessageTime + stepInterval) {
+                lastSkipMessageTime = currentTime;
+                console.log(`skipping due to ${JSON.stringify({isTimeToStep,isNotPaused})}`)
+            }
             await delay();
         }
     }
