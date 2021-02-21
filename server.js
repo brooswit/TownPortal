@@ -20,6 +20,7 @@ let entityCollection = db.collection('entities');
 
 app.use(express.static('dist'));
 
+let states = {};
 io.on('connection', (socket) => {
     states[socket.id] = {};
     let prefix = `[user@${socket.id}]`;
