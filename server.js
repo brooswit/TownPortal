@@ -141,7 +141,7 @@ function oneOf(array) {
 let controllers = {
     "terra": async(doc) => {
         const data = doc.data();
-        const self = makeEntity(data);
+        const self = await makeEntity(data);
         const game = {
             find: async(patch) => {
                 const results = [];
@@ -165,7 +165,7 @@ let controllers = {
             },
             spawn: async(patch) => {
                 const doc = await entityCollection.add(patch);
-                return makeEntity(doc.data());
+                return await makeEntity(doc.data());
             }
         }
 
