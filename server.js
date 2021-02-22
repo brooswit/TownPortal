@@ -147,6 +147,7 @@ let controllers = {
                 const results = [];
                 let snapshot = entityCollection;
                 for (key in patch) {
+                    console.log (`where "${key}" === "${patch[key]}"`)
                     snapshot = snapshot.where(key, '==', patch[key]);
                 }
                 snapshot = snapshot.where('deleted', '!=', true);
