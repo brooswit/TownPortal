@@ -140,8 +140,8 @@ function oneOf(array) {
 
 let controllers = {
     "terra": async(doc) => {
+        const self = await makeEntity(doc);
         const data = doc.data();
-        const self = await makeEntity(data);
         const game = {
             find: async(patch) => {
                 const results = [];
@@ -155,7 +155,7 @@ let controllers = {
                 let promises = [];
                 if (!snapshot.empty) {
                     snapshot.forEach(async doc => {
-                        promises.push(makeEntity(doc.data()));
+                        promises.push(makeEntity(doc));
                     });
                 };
                 return await Promise.all(promises);;
@@ -166,18 +166,19 @@ let controllers = {
             spawn: async(patch) => {
                 const doc = await entityCollection.add(patch);
                 const snapshot = await doc.get();
-                return await makeEntity(snapshot.data());
+                return await makeEntity(snapshot);
             }
         }
 
-        async function makeEntity(data){
+        async function makeEntity(doc){
+            const data = doc.data();
             console.log("making entity");
             console.log(data);
             return Object.assign({}, data, {
                 update: async (patch) => {
                     console.log(doc);
                     console.log(Object.keys(doc));
-                    doc.update(patch);
+                    await doc.update(patch);
                 }
             });
         }
