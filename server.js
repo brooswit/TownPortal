@@ -175,6 +175,8 @@ let controllers = {
             console.log(data);
             return Object.assign({}, data, {
                 update: async (patch) => {
+                    console.log(doc);
+                    console.log(Object.keys(doc));
                     doc.update(patch);
                 }
             });
