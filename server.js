@@ -170,6 +170,8 @@ let controllers = {
         }
 
         async function makeEntity(data){
+            console.log("making entity");
+            console.log(data);
             Object.assign({}, data, {
                 update: async (patch) => {
                     doc.update(patch);
