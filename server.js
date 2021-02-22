@@ -139,23 +139,23 @@ function oneOf(array) {
 // function grassController(previousStage, currentStage, nextStages) {
 
 let controllers = {
-    "terra": async(doc) => {
-        const self = await makeEntity(doc);
-        const data = doc.data();
+    "terra": async(snapshot) => {
+        const self = await makeEntity(snapshot.ref);
+        const data = snapshot.data();
         const game = {
             find: async(patch) => {
                 const results = [];
-                let snapshot = entityCollection;
+                let snapshots = entityCollection;
                 for (key in patch) {
                     console.log (`where "${key}" === "${patch[key]}"`)
-                    snapshot = snapshot.where(key, '==', patch[key]);
+                    snapshots = snapshots.where(key, '==', patch[key]);
                 }
-                snapshot = snapshot.where('deleted', '!=', true);
-                snapshot = await snapshot.get();
+                snapshots = snapshots.where('deleted', '!=', true);
+                snapshots = await snapshots.get();
                 let promises = [];
-                if (!snapshot.empty) {
-                    snapshot.forEach(async doc => {
-                        promises.push(makeEntity(doc));
+                if (!snapshots.empty) {
+                    snapshots.forEach(async snapshot => {
+                        promises.push(makeEntity(snapshot.ref));
                     });
                 };
                 return await Promise.all(promises);;
@@ -164,27 +164,18 @@ let controllers = {
                 return (await game.find(patch))[0];
             },
             spawn: async(patch) => {
-                const doc = await entityCollection.add(patch);
-                return await makeEntity(doc);
+                const ref = await entityCollection.add(patch);
+                return await makeEntity(ref);
             }
         }
 
-        async function makeEntity(doc){
-            console.log('--------------------------------------------------------------------------------')
-            console.log("making entity");
-            console.log('--------------------------------------------------------------------------------')
-            console.log(typeof doc);
-            console.log('--------------------------------------------------------------------------------')
-            console.log(doc);
-            console.log('--------------------------------------------------------------------------------')
-            const snapshot = await doc.get();
+        async function makeEntity(ref){
+            const snapshot = await ref.get();
             const data = snapshot.data();
             console.log(data);
             return Object.assign({}, data, {
                 update: async (patch) => {
-                    console.log(doc);
-                    console.log(Object.keys(doc));
-                    await doc.update(patch);
+                    await ref.update(patch);
                 }
             });
         }
@@ -256,16 +247,16 @@ async function run() {
         let isTimeToStep = currentTime >= lastTick + stepInterval
         if (isTimeToStep && isNotPaused) {
             console.log(`stepping`)
-            let querySnapshot = await entityCollection.get();
-            console.log(`processing ${querySnapshot._size} entities`);
-            querySnapshot.forEach(async (doc) => {
+            let snapshots = await entityCollection.get();
+            console.log(`processing ${snapshots._size} entities`);
+            snapshots.forEach(async (snapshot) => {
                 let isPaused = await ldClient.variation('pause', {key:"anonymous"}, true);
                 if (isPaused) return;
-                let data = doc.data();
+                let data = snapshot.data();
                 const doesControllerExists = !!controllers[data.classname];
                 if (doesControllerExists) {
                     console.log(`thinkin bout ${data.classname}`);
-                    controllers[data.classname](doc);
+                    controllers[data.classname](snapshot);
                 }
             });
             lastTick += stepInterval;
