@@ -143,7 +143,6 @@ let controllers = {
         const data = doc.data();
         const self = makeEntity(data);
         const game = {
-            doc,
             find: async(patch) => {
                 const results = [];
                 let snapshot = entityCollection;
@@ -250,8 +249,11 @@ async function run() {
                 let isPaused = await ldClient.variation('pause', {key:"anonymous"}, true);
                 if (isPaused) return;
                 let data = doc.data();
-                console.log(`thinkin bout ${data.classname}`);
-                controllers[data.classname] && controllers[data.classname](doc);
+                const doesControllerExists = !!controllers[data.classname];
+                if (doesControllerExists) {
+                    console.log(`thinkin bout ${data.classname}`);
+                    controllers[data.classname](doc);
+                }
             });
             lastTick += stepInterval;
         } else {
