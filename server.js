@@ -176,7 +176,6 @@ async function run() {
     let lastTick = currentTime - stepInterval;
     let lastSkipMessageTime = lastTick;
 
-    await think(self, game);
     while(true) {
         currentTime = Date.now();
         stepInterval = await ldClient.variation('step-interval', {key:"anonymous"}, 10000);
