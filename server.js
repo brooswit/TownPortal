@@ -170,9 +170,15 @@ let controllers = {
         }
 
         async function makeEntity(doc){
+            console.log('--------------------------------------------------------------------------------')
+            console.log("making entity");
+            console.log('--------------------------------------------------------------------------------')
+            console.log(typeof doc);
+            console.log('--------------------------------------------------------------------------------')
+            console.log(doc);
+            console.log('--------------------------------------------------------------------------------')
             const snapshot = await doc.get();
             const data = snapshot.data();
-            console.log("making entity");
             console.log(data);
             return Object.assign({}, data, {
                 update: async (patch) => {
