@@ -165,7 +165,8 @@ let controllers = {
             },
             spawn: async(patch) => {
                 const doc = await entityCollection.add(patch);
-                return await makeEntity(doc.data());
+                const snapshot = await doc.get();
+                return await makeEntity(snapshot.data());
             }
         }
 
