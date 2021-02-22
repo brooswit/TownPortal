@@ -152,12 +152,13 @@ let controllers = {
                 }
                 snapshot = snapshot.where('deleted', '!=', true);
                 snapshot = await snapshot.get();
+                let promises = [];
                 if (!snapshot.empty) {
-                    snapshot.forEach(doc => {
-                        await makeEntity(doc.data());
+                    snapshot.forEach(async doc => {
+                        promises.push(makeEntity(doc.data()));
                     });
                 });
-                return results;
+                return await Promise.all(promises);;
             },
             findOne: async(patch) => {
                 return (await game.find(patch))[0];
