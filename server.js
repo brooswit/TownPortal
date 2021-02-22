@@ -141,6 +141,7 @@ function oneOf(array) {
 let controllers = {
     "land": async (snapshot) => {},
     "terra": async(snapshot) => {
+        console.log(`thinkin bout terra`);
         const self = await makeEntity(snapshot.ref);
         const data = snapshot.data();
         const game = {
@@ -254,7 +255,6 @@ async function run() {
                 let data = snapshot.data();
                 const doesControllerExists = !!controllers[data.classname];
                 if (doesControllerExists) {
-                    console.log(`thinkin bout ${data.classname}`);
                     controllers[data.classname](snapshot);
                 } else {
                     await snapshot.ref.delete();
