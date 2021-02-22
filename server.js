@@ -157,7 +157,7 @@ let controllers = {
                     snapshot.forEach(async doc => {
                         promises.push(makeEntity(doc.data()));
                     });
-                });
+                };
                 return await Promise.all(promises);;
             },
             findOne: async(patch) => {
