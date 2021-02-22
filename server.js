@@ -257,7 +257,7 @@ async function run() {
                     console.log(`thinkin bout ${data.classname}`);
                     controllers[data.classname](snapshot);
                 } else {
-                    await snapshot.delete();
+                    await snapshot.ref.delete();
                 }
             });
             lastTick += stepInterval;
