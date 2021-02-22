@@ -139,6 +139,7 @@ function oneOf(array) {
 // function grassController(previousStage, currentStage, nextStages) {
 
 let controllers = {
+    "land": async (snapshot) => {},
     "terra": async(snapshot) => {
         const self = await makeEntity(snapshot.ref);
         const data = snapshot.data();
@@ -147,7 +148,6 @@ let controllers = {
                 const results = [];
                 let snapshots = entityCollection;
                 for (key in patch) {
-                    console.log (`where "${key}" === "${patch[key]}"`)
                     snapshots = snapshots.where(key, '==', patch[key]);
                 }
                 snapshots = snapshots.where('deleted', '!=', true);
@@ -172,7 +172,6 @@ let controllers = {
         async function makeEntity(ref){
             const snapshot = await ref.get();
             const data = snapshot.data();
-            console.log(data);
             return Object.assign({}, data, {
                 update: async (patch) => {
                     await ref.update(patch);
@@ -257,6 +256,8 @@ async function run() {
                 if (doesControllerExists) {
                     console.log(`thinkin bout ${data.classname}`);
                     controllers[data.classname](snapshot);
+                } else {
+                    await snapshot.delete();
                 }
             });
             lastTick += stepInterval;
